@@ -2,7 +2,7 @@
 <html lang="en">
     <head>
         <title>
-            Monkey! Robot! Pirate! Ninja! Zombie! ONLINE! (MoRoPiNZee!)
+            Monkey! Robot! Pirate! Ninja! Zombie! ONLINE! (Moronpinzee!!!)
         </title>
         <!-- Required meta tags -->
         <meta charset="utf-8" />
@@ -18,11 +18,191 @@
             integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
             crossorigin="anonymous"
         />
+        <link rel="stylesheet" href="assets/style.css" />
+        <script src="https://www.gstatic.com/firebasejs/5.9.0/firebase.js"></script>
     </head>
     <body>
+        <div class="container" id="hello">
+            <div class="jumbotron">
+                <h1 class="display-4">
+                    Play Monkey! Robot! Pirate! Ninja! Zombie! ONLINE!
+                </h1>
+                <p class="lead">
+                    Call it <em><b>Moropinzee</b></em> for short. Start playing
+                    by entering your name below. Don't know how to play?
+                    <a
+                        href="#"
+                        title="Moropinzee instructions"
+                        data-toggle="modal"
+                        data-target="#moropinzeeInstructions"
+                        >Learn all about the game!</a
+                    >
+                </p>
+
+                <!-- Instructions modal -->
+                <div
+                    class="modal fade"
+                    id="moropinzeeInstructions"
+                    tabindex="-1"
+                    role="dialog"
+                    aria-labelledby="moropinzeeInstructionsTitle"
+                    aria-hidden="true"
+                >
+                    <div
+                        class="modal-dialog modal-dialog-centered"
+                        role="document"
+                    >
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5
+                                    class="modal-title"
+                                    id="moropinzeeInstructionsTitle"
+                                >
+                                    MoRoPiNZee Instructions
+                                </h5>
+                                <button
+                                    type="button"
+                                    class="close"
+                                    data-dismiss="modal"
+                                    aria-label="Close"
+                                >
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <img
+                                    src="assets/images/moropinzee.jpg"
+                                    class="img-fluid"
+                                />
+                                <p class="lead my-2">
+                                    It's like Rock, Paper, Scissors, only much,
+                                    much better! Here's how it goes.
+                                </p>
+                                <div><strong>Monkey</strong></div>
+                                <div>Monkey fools Ninja</div>
+                                <div>Monkey unplugs Robot</div>
+                                <div>Suggested noise: ee-ee-eek!</div>
+                                <div>&nbsp;</div>
+                                <div><strong>Robot</strong></div>
+                                <div>Robot chokes Ninja</div>
+                                <div>Robot crushes Zombie</div>
+                                <div>Suggested noise: ex-ter-min-ate!</div>
+                                <div>&nbsp;</div>
+                                <div><strong>Pirate</strong></div>
+                                <div>Pirate drowns Robot</div>
+                                <div>Pirate skewers Monkey</div>
+                                <div>Suggested noise: arrrrr!</div>
+                                <div>&nbsp;</div>
+                                <div><strong>Ninja</strong></div>
+                                <div>Ninja karate chops Pirate</div>
+                                <div>Ninja decapitates Zombie</div>
+                                <div>Suggested noise: keeee-ah!</div>
+                                <div>&nbsp;</div>
+                                <div><strong>Zombie</strong></div>
+                                <div>Zombie eats Pirate</div>
+                                <div>Zombie savages Monkey</div>
+                                <div>Suggested noise: braaaaaaaaaainsss!</div>
+                            </div>
+                            <div class="modal-footer">
+                                <button
+                                    type="button"
+                                    class="btn btn-secondary"
+                                    data-dismiss="modal"
+                                >
+                                    Close
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="my-4" />
+
+                <div class="form-label-group">
+                    <input
+                        type="text"
+                        id="playerName"
+                        class="form-control"
+                        placeholder="Enter player name"
+                        required
+                        autofocus
+                    />
+                    <label for="playerName" class="sr-only"
+                        >Enter player name</label
+                    >
+                    <button
+                        class="btn btn-lg btn-primary btn-block text-uppercase"
+                        type="submit"
+                        id="submitName"
+                    >
+                        Play
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="container" id="gameBoard">
+            <div class="row">
+                <div class="col-12 col-md-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="card-title">
+                                <h1 id="playerOne">Player One</h1>
+                            </div>
+                            <div class="card-text">
+                                <button class="btn btn-primary">Monkey</button>
+                                <button class="btn btn-primary">Robot</button>
+                                <button class="btn btn-primary">Pirate</button>
+                                <button class="btn btn-primary">Ninja</button>
+                                <button class="btn btn-primary">Zombie</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col 12 col-md-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="card-title">
+                                <h1 id="turnResults">Turn Results</h1>
+                            </div>
+                            <div class="card-text">
+                                <p class="lead">
+                                    Waiting for players to make their plays...
+                                    Don't know how to play?
+                                    <a
+                                        href="#"
+                                        title="Moropinzee instructions"
+                                        data-toggle="modal"
+                                        data-target="#moropinzeeInstructions"
+                                        >Learn all about the game!</a
+                                    >
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="card-title">
+                                <h1 id="playerTwo">Player Two</h1>
+                            </div>
+                            <div class="card-text">
+                                <button class="btn btn-primary">Monkey</button>
+                                <button class="btn btn-primary">Robot</button>
+                                <button class="btn btn-primary">Pirate</button>
+                                <button class="btn btn-primary">Ninja</button>
+                                <button class="btn btn-primary">Zombie</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <footer>
             <small
-                >[Inspired by
+                >[100% Stolen from
                 <a
                     href="http://markarayner.com/archives/1613#sthash.Tx0jtMIA.dpbs"
                     target="_blank"
@@ -43,6 +223,6 @@
             integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
             crossorigin="anonymous"
         ></script>
-        <script src="https://www.gstatic.com/firebasejs/5.9.0/firebase.js"></script>
+        <script src="assets/script.js"></script>
     </body>
 </html>

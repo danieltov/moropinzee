@@ -1,0 +1,67 @@
+/* Global */
+
+body {
+    background: #007bff;
+    background: linear-gradient(to right, #0062e6, #33aeff);
+}
+
+/* Enter Game Jumbo */
+
+.jumbotron {
+    margin-top: 3em;
+    border: none;
+    box-shadow: 0 0.5rem 1rem 0 rgba(0, 0, 0, 0.1);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: whitesmoke;
+}
+
+.jumbotron hr {
+    width: 100%;
+}
+
+.jumbotron .form-label-group {
+    width: 50%;
+}
+
+.jumbotron .form-label-group input,
+.jumbotron .form-label-group button {
+    border-radius: 2em;
+}
+
+.jumbotron .form-label-group input {
+    padding: 1.4rem;
+}
+
+.jumbotron .form-label-group button {
+    margin-top: 0.5em;
+}
+
+/* Game Board */
+.card-title h1 {
+    text-align: center;
+}
+
+.card-text {
+    text-align: center;
+}
+
+.card-text button {
+    margin: 5px;
+}
+
+/* Game Board Styles */
+#gameBoard {
+    margin-top: 3em;
+    display: none;
+}
+
+/* Footer */
+footer {
+    background: white;
+    display: inline-block;
+    margin: 0.5rem;
+}
