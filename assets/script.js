@@ -2,7 +2,12 @@
 -   Only two users can play at the same time.
 
     Initial load.
-    A player is added only when user enters their name. 
+
+    Check if there are any players.
+    activePlayers() // returns active players.
+    if activePlayers returns 2, show message that says max players currently playing.
+    else, allow player to join game by typing name in the field.
+
         Push player name into database/player node.
         Player Node example:
             {
@@ -11,43 +16,17 @@
                 wins: 1000,
                 losses: 0
         }
-    Game doesn't start until there are two players (database/player.length === 2?)    
+    populate game board with player info.
+    if first player, wait for second player. 
+
+    once activePlayers() returns 2, begin turn.
+
+
 
 
 ////////////////////////////////////////////////////////////////
 
 --- Gameplay logic
-
-    - Once connected, begin Turn. (Turn++) Both players will pick either 'monkey', 'pirate', 'robot', 'ninja', or 'zombie'. 
-
-            Monkey
-
-            Monkey fools Ninja
-            Monkey unplugs Robot
-
-        Suggested noise: ee-ee-eek!
-
-            Robot chokes Ninja
-            Robot crushes Zombie
-
-        Suggested noise: ex-ter-min-ate!
-
-            Pirate drowns Robot
-            Pirate skewers Monkey
-
-        Suggested noise: arrrrr!
-
-            Ninja karate chops Pirate
-            Ninja decapitates Zombie
-
-        Suggested noise: keeee-ah!
-
-            Zombie eats Pirate
-            Zombie savages Monkey
-
-        Suggested noise: braaaaaaaaaainsss!
-
-////////////////////////////////////////////////////////////////
 
     - The game will track each player's wins and losses.
         - Compare the user choices and decide a winner.
@@ -71,25 +50,113 @@ var config = {
 };
 firebase.initializeApp(config);
 
-var database = firebase.database();
+var database = firebase.database(),
+    players,
+    playerOneRef,
+    playerTwoRef;
 
-$(function() {
+const playerListener = () => {
     $('#submitName').on('click', function() {
         let name = $('#playerName')
             .val()
             .trim();
         $('#playerName').val('');
-        $('#playerOne').text(name);
 
+        // showBoard()
         $('#hello').toggle(400);
         $('#gameBoard').toggle(400);
 
+        // pushPlayer()
         database.ref('players').push({
             name: name,
             choice: '',
             wins: 0,
             loses: 0
         });
-        // learn how to reference back to child key/ID.
+        setBoard();
+    });
+};
+
+const nuke = () => {
+    console.log('nuke() ran');
+    database.ref().set(null);
+};
+
+const activePlayers = () => {
+    console.log('activePlayers() ran');
+    database.ref('players').on('value', function(data) {
+        players = Object.keys(data.val()).length; // returns length of players object.
+    });
+    return players; // returns how many players active
+};
+
+const init = () => {
+    console.log('init() ran');
+    if (players > 1) {
+        console.log('2 or more players');
+        alert('This game is full');
+        $('#playerName').attr('disabled', 'true');
+    } else {
+        playerListener();
+    }
+};
+
+const setKeys = () => {
+    console.log('setKeys() ran');
+    database.ref('players').on('child_added', function(snapshot) {
+        var playerKey = snapshot.key;
+        // set playerKeys
+        if ($('#playerOne').attr('data-key') !== undefined) {
+            $('#playerTwo').attr('data-key', playerKey);
+        } else {
+            $('#playerOne').attr('data-key', playerKey);
+        }
+    });
+};
+
+const whosPlaying = () => {
+    console.log('whosPlaying() ran');
+    let playerOneKey = $('#playerOne').attr('data-key');
+    let playerTwoKey = $('#playerTwo').attr('data-key');
+    playerOneRef = database.ref(`players/${playerOneKey}`);
+    playerTwoRef = database.ref(`players/${playerTwoKey}`);
+};
+
+const setPlayers = () => {
+    console.log('setPlayers() ran');
+    playerOneRef.on('value', function(data) {
+        let playerOne = data.val();
+        $('#playerOne').text(playerOne.name);
+    });
+    playerTwoRef.on('value', function(data) {
+        let playerTwo = data.val();
+        $('#playerTwo').text(playerTwo.name);
+    });
+};
+
+const disconnectListener = () => {
+    playerOneRef.onDisconnect().remove();
+    playerTwoRef.onDisconnect().remove();
+};
+
+const showBoard = () => {
+    console.log('showBoard() ran');
+    $('#hello').toggle(400);
+    $('#gameBoard').toggle(400);
+};
+
+const setBoard = () => {
+    setKeys();
+    whosPlaying();
+    setPlayers();
+    disconnectListener();
+};
+
+$(function() {
+    activePlayers();
+    $('#play').on('click', function() {
+        init();
+        $('.name-form').toggle(400);
+        $(this).toggle(400);
     });
 });

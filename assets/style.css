@@ -23,6 +23,10 @@ body {
     width: 100%;
 }
 
+.name-form {
+    display: none;
+}
+
 .jumbotron .form-label-group {
     width: 50%;
 }

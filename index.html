@@ -28,8 +28,8 @@
                     Play Monkey! Robot! Pirate! Ninja! Zombie! ONLINE!
                 </h1>
                 <p class="lead">
-                    Call it <em><b>Moropinzee</b></em> for short. Start playing
-                    by entering your name below. Don't know how to play?
+                    Call it <em><b>Moropinzee</b></em> for short. Don't know how
+                    to play?
                     <a
                         href="#"
                         title="Moropinzee instructions"
@@ -38,6 +38,9 @@
                         >Learn all about the game!</a
                     >
                 </p>
+                <button class="btn text-center btn-lg bg-success" id="play">
+                    I'm ready to play!
+                </button>
 
                 <!-- Instructions modal -->
                 <div
@@ -118,7 +121,7 @@
 
                 <hr class="my-4" />
 
-                <div class="form-label-group">
+                <div class="form-label-group name-form">
                     <input
                         type="text"
                         id="playerName"
@@ -163,21 +166,9 @@
                     <div class="card">
                         <div class="card-body">
                             <div class="card-title">
-                                <h1 id="turnResults">Turn Results</h1>
+                                <h1 id="turnResults">Results</h1>
                             </div>
-                            <div class="card-text">
-                                <p class="lead">
-                                    Waiting for players to make their plays...
-                                    Don't know how to play?
-                                    <a
-                                        href="#"
-                                        title="Moropinzee instructions"
-                                        data-toggle="modal"
-                                        data-target="#moropinzeeInstructions"
-                                        >Learn all about the game!</a
-                                    >
-                                </p>
-                            </div>
+                            <div class="card-text" id="resultsMessage"></div>
                         </div>
                     </div>
                 </div>
