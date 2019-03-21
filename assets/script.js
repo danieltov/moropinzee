@@ -1,28 +1,4 @@
 /*
--   Only two users can play at the same time.
-
-    Initial load.
-
-    Check if there are any players.
-    activePlayers() // returns active players.
-    if activePlayers returns 2, show message that says max players currently playing.
-    else, allow player to join game by typing name in the field.
-
-        Push player name into database/player node.
-        Player Node example:
-            {
-                name: 'Johnny Appleseed',
-                choice: 'monkey',
-                wins: 1000,
-                losses: 0
-        }
-    populate game board with player info.
-    if first player, wait for second player. 
-
-    once activePlayers() returns 2, begin turn.
-
-
-
 
 ////////////////////////////////////////////////////////////////
 
@@ -39,7 +15,7 @@
 
     */
 
-// Initialize Firebase
+// ! Initialize Firebase
 var config = {
     apiKey: 'AIzaSyB0rCzVmSeyg1AOB1-tg2C5fkTUAA1PRQE',
     authDomain: 'moropinzee.firebaseapp.com',
@@ -55,28 +31,6 @@ var database = firebase.database(),
     playerOneRef,
     playerTwoRef;
 
-const playerListener = () => {
-    $('#submitName').on('click', function() {
-        let name = $('#playerName')
-            .val()
-            .trim();
-        $('#playerName').val('');
-
-        // showBoard()
-        $('#hello').toggle(400);
-        $('#gameBoard').toggle(400);
-
-        // pushPlayer()
-        database.ref('players').push({
-            name: name,
-            choice: '',
-            wins: 0,
-            loses: 0
-        });
-        setBoard();
-    });
-};
-
 const nuke = () => {
     console.log('nuke() ran');
     database.ref().set(null);
@@ -85,9 +39,9 @@ const nuke = () => {
 const activePlayers = () => {
     console.log('activePlayers() ran');
     database.ref('players').on('value', function(data) {
-        players = Object.keys(data.val()).length; // returns length of players object.
+        players = Object.keys(data.val()).length;
     });
-    return players; // returns how many players active
+    return players;
 };
 
 const init = () => {
@@ -99,6 +53,36 @@ const init = () => {
     } else {
         playerListener();
     }
+};
+
+const playerListener = () => {
+    $('#submitName').on('click', function() {
+        let name = $('#playerName')
+            .val()
+            .trim();
+
+        $('#playerName').val('');
+
+        showBoard();
+        pushPlayer(name);
+        setBoard();
+    });
+};
+
+const pushPlayer = name => {
+    console.log('pushPlayer() ran');
+    database.ref('players').push({
+        name: name,
+        choice: '',
+        wins: 0,
+        loses: 0
+    });
+};
+
+const showBoard = () => {
+    console.log('showBoard() ran');
+    $('#hello').toggle(400);
+    $('#gameBoard').toggle(400);
 };
 
 const setKeys = () => {
@@ -114,8 +98,8 @@ const setKeys = () => {
     });
 };
 
-const whosPlaying = () => {
-    console.log('whosPlaying() ran');
+const setPlayerRefs = () => {
+    console.log('setPlayerRefs() ran');
     let playerOneKey = $('#playerOne').attr('data-key');
     let playerTwoKey = $('#playerTwo').attr('data-key');
     playerOneRef = database.ref(`players/${playerOneKey}`);
@@ -139,16 +123,24 @@ const disconnectListener = () => {
     playerTwoRef.onDisconnect().remove();
 };
 
-const showBoard = () => {
-    console.log('showBoard() ran');
-    $('#hello').toggle(400);
-    $('#gameBoard').toggle(400);
+const setButtons = () => {
+    let moves = ['monkey', 'robot', 'pirate', 'ninja', 'zombie'];
+    // TODO check if its player one or two
+    $.each(moves, function(idx, val) {
+        let button = $('<button>')
+            .addClass('btn bg-primary')
+            .attr('data-play', val)
+            .text(val);
+        $('#playButtons').append(button);
+    });
 };
 
 const setBoard = () => {
+    console.log('setBoard() ran');
     setKeys();
-    whosPlaying();
+    setPlayerRefs();
     setPlayers();
+    setButtons();
     disconnectListener();
 };
 
