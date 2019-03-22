@@ -12,8 +12,9 @@
 
     - Throw some chat functionality in there! 
     ---- save text input to firebase db (*set*), and *append* to html with jQuery. that way even tho firebase replaces value with every message, the text is appended. for security reasons, chat is not saved locally or remotely. lol
+    
 
-    */
+*/
 
 // ! Initialize Firebase
 var config = {
@@ -24,22 +25,26 @@ var config = {
     storageBucket: 'moropinzee.appspot.com',
     messagingSenderId: '650553619409'
 };
+
 firebase.initializeApp(config);
 
 var database = firebase.database(),
     players,
     playerOneRef,
-    playerTwoRef;
+    playerTwoRef,
+    currentPlayer;
 
 const nuke = () => {
     console.log('nuke() ran');
-    database.ref().set(null);
+    database.ref('players').remove();
 };
 
 const activePlayers = () => {
     console.log('activePlayers() ran');
     database.ref('players').on('value', function(data) {
-        players = Object.keys(data.val()).length;
+        if (data.val() !== null) {
+            players = Object.keys(data.val()).length;
+        } else players = 0;
     });
     return players;
 };
@@ -48,6 +53,7 @@ const init = () => {
     console.log('init() ran');
     if (players > 1) {
         console.log('2 or more players');
+        console.log('~~~~~~~~~~~~~~~');
         alert('This game is full');
         $('#playerName').attr('disabled', 'true');
     } else {
@@ -63,8 +69,8 @@ const playerListener = () => {
 
         $('#playerName').val('');
 
-        showBoard();
         pushPlayer(name);
+        showBoard();
         setBoard();
     });
 };
@@ -89,49 +95,78 @@ const setKeys = () => {
     console.log('setKeys() ran');
     database.ref('players').on('child_added', function(snapshot) {
         var playerKey = snapshot.key;
-        // set playerKeys
-        if ($('#playerOne').attr('data-key') !== undefined) {
-            $('#playerTwo').attr('data-key', playerKey);
+        if ($('#playerOneArea').attr('data-key') !== undefined) {
+            console.log('playerOne data-key already set. Setting playerTwo');
+            console.log('~~~~~~~~~~~~~~~');
+            $('#playerTwoArea').attr('data-key', playerKey);
+            setPlayerRefs();
         } else {
-            $('#playerOne').attr('data-key', playerKey);
+            $('#playerOneArea').attr('data-key', playerKey);
         }
     });
 };
 
 const setPlayerRefs = () => {
     console.log('setPlayerRefs() ran');
-    let playerOneKey = $('#playerOne').attr('data-key');
-    let playerTwoKey = $('#playerTwo').attr('data-key');
+    console.log('~~~~~~~~~~~~~~~');
+    let playerOneKey = $('#playerOneArea').attr('data-key');
+    let playerTwoKey = $('#playerTwoArea').attr('data-key');
     playerOneRef = database.ref(`players/${playerOneKey}`);
     playerTwoRef = database.ref(`players/${playerTwoKey}`);
 };
 
 const setPlayers = () => {
     console.log('setPlayers() ran');
-    playerOneRef.on('value', function(data) {
-        let playerOne = data.val();
-        $('#playerOne').text(playerOne.name);
-    });
-    playerTwoRef.on('value', function(data) {
-        let playerTwo = data.val();
-        $('#playerTwo').text(playerTwo.name);
-    });
-};
-
-const disconnectListener = () => {
-    playerOneRef.onDisconnect().remove();
-    playerTwoRef.onDisconnect().remove();
+    console.log('~~~~~~~~~~~~~~~');
+    if (players === 1) {
+        playerOneRef.on('value', function(data) {
+            let playerOne = data.val();
+            $('#playerOneName').text(playerOne.name);
+            currentPlayer = $('#playerOneArea').attr('data-key');
+        });
+        database.ref('players').on('value', function() {
+            if (players > 1) {
+                playerTwoRef.on('value', function(data) {
+                    let playerTwo = data.val();
+                    $('#playerTwoName').text(playerTwo.name);
+                });
+            }
+        });
+    } else {
+        playerOneRef.on('value', function(data) {
+            let playerOne = data.val();
+            $('#playerOneName').text(playerOne.name);
+        });
+        playerTwoRef.on('value', function(data) {
+            let playerTwo = data.val();
+            $('#playerTwoName').text(playerTwo.name);
+            currentPlayer = $('#playerTwoArea').attr('data-key');
+        });
+    }
 };
 
 const setButtons = () => {
+    if ($('#playerOneArea').attr('data-key') !== currentPlayer) {
+        console.log('playerTwo is the current player, generating play buttons');
+        console.log('~~~~~~~~~~~~~~~');
+        renderButtons(`playerTwo`);
+    } else {
+        console.log('playerOne is the current player, generating play buttons');
+        console.log('~~~~~~~~~~~~~~~');
+        renderButtons(`playerOne`);
+    }
+};
+
+const renderButtons = player => {
     let moves = ['monkey', 'robot', 'pirate', 'ninja', 'zombie'];
-    // TODO check if its player one or two
+    let buttonArea = $('<div>').attr('id', `${player}Buttons`);
+    $(`#${player}Area .card-text`).append(buttonArea);
     $.each(moves, function(idx, val) {
         let button = $('<button>')
-            .addClass('btn bg-primary')
+            .addClass('btn bg-primary text-white')
             .attr('data-play', val)
             .text(val);
-        $('#playButtons').append(button);
+        $(`#${player}Buttons`).append(button);
     });
 };
 
@@ -141,8 +176,26 @@ const setBoard = () => {
     setPlayerRefs();
     setPlayers();
     setButtons();
-    disconnectListener();
+    resultsMessage();
 };
+
+const resultsMessage = () => {
+    let msg = $('#resultsMessage');
+    database.ref('players').on('value', function(data) {
+        if (players === 1) {
+            msg.text('Waiting for Player Two to join.');
+        } else {
+            msg.text('Waiting for players to make their selections!');
+        }
+    });
+};
+
+// ! THIS DOES NOT WORK
+// ! const disconnectListener = () => {
+// !
+// !    playerOneRef.onDisconnect().remove();
+// !    playerTwoRef.onDisconnect().remove();
+// ! };
 
 $(function() {
     activePlayers();
