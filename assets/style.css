@@ -57,6 +57,10 @@ body {
     margin: 5px;
 }
 
+button.choice {
+    border: 3px solid red;
+}
+
 /* Game Board Styles */
 #gameBoard {
     margin-top: 3em;

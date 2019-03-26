@@ -113,6 +113,7 @@ const setPlayerRefs = () => {
     let playerTwoKey = $('#playerTwoArea').attr('data-key');
     playerOneRef = database.ref(`players/${playerOneKey}`);
     playerTwoRef = database.ref(`players/${playerTwoKey}`);
+    currentPlayerRef = database.ref(`players/${currentPlayer}`);
 };
 
 const setPlayers = () => {
@@ -141,6 +142,7 @@ const setPlayers = () => {
             let playerTwo = data.val();
             $('#playerTwoName').text(playerTwo.name);
             currentPlayer = $('#playerTwoArea').attr('data-key');
+            setPlayerRefs();
         });
     }
 };
@@ -177,6 +179,8 @@ const setBoard = () => {
     setPlayers();
     setButtons();
     resultsMessage();
+    buttonListener();
+    choiceCheck();
 };
 
 const resultsMessage = () => {
@@ -185,9 +189,126 @@ const resultsMessage = () => {
         if (players === 1) {
             msg.text('Waiting for Player Two to join.');
         } else {
-            msg.text('Waiting for players to make their selections!');
+            msg.text(
+                'Turn started! Waiting for players to make their selections!'
+            );
         }
     });
+};
+
+// * Turn Logic
+// * 1. Listen for play button clicks
+// * 2. compare choices and decide winner
+const buttonListener = () => {
+    // TODO don't listen for button clicks until turn starts
+    $('.card-text button').on('click', function() {
+        if (!$(this).hasClass('choice')) {
+            $(this).addClass('choice');
+            let choice = $(this).attr('data-play');
+            currentPlayerRef.update({
+                choice: choice
+            });
+        }
+        $('.card-text button').each(function(i) {
+            $(this).attr('disabled', 'true');
+        });
+    });
+};
+
+const choiceCheck = () => {
+    console.log(`choiceCheck() ran`);
+    let count = 0;
+    database.ref('players').on('child_changed', function() {
+        playerOneRef.on('value', function(d) {
+            let data = d.val();
+            if (data.choice.length > 0) {
+                count++;
+            }
+        });
+        playerTwoRef.on('value', function(d) {
+            let data = d.val();
+            if (data.choice.length > 0) {
+                count++;
+            }
+        });
+        if (count > 2) {
+            count = 0;
+            getChoices();
+        } else {
+            console.log(`Ready count: ${count}`);
+            console.log('Both players have not chosen!');
+        }
+    });
+};
+
+// TODO run compareChoice() when both players have chosen.
+
+const compareChoices = (a, b) => {
+    console.log(`compareChoices() ran`);
+    console.log(`Comparing: ${a} and ${b}`);
+    // TODO update wins/losses
+    let cry,
+        msg = $('#resultsMessage');
+    console.log(`I'm about to go in the switch`);
+    switch (a) {
+        case 'monkey':
+            cry = 'Ee-ee-eek!';
+            if (b === 'robot') msg.text(`${cry} Monkey unplugs Robot`);
+            if (b === 'pirate') msg.text(`${cry} Pirate skewers Monkey`);
+            if (b === 'ninja') msg.text(`${cry} Monkey fools Ninja`);
+            if (b === 'zombie') msg.text(`${cry} Zombie savages Monkey`);
+            if (a === b) msg.text(`Gasp! It's a tie!`);
+            break;
+        case 'robot':
+            cry = 'Ex-ter-min-ate!';
+            if (b === 'monkey') msg.text(`${cry} Monkey unplugs Robot`);
+            if (b === 'pirate') msg.text(`${cry} Pirate skewers Monkey`);
+            if (b === 'ninja') msg.text(`${cry} Robot chokes Ninja!`);
+            if (b === 'zombie') msg.text(`${cry} Zombie savages Monkey`);
+            if (a === b) msg.text(`Gasp! It's a tie!`);
+            break;
+        case 'pirate':
+            cry = 'Arrrr!';
+            if (b === 'monkey') msg.text(`${cry} Pirate skewers Monkey`);
+            if (b === 'robot') msg.text(`${cry} Pirate drowns Robot`);
+            if (b === 'ninja') msg.text(`${cry} Ninja karate chops Pirate`);
+            if (a === b) msg.text(`Gasp! It's a tie!`);
+        case 'ninja':
+            cry = 'Keee-ah!';
+            if (b === 'monkey') msg.text(`${cry} Monkey fools Ninja`);
+            if (b === 'robot') msg.text(`${cry} Robot chokes Ninja`);
+            if (b === 'pirate') msg.text(`${cry} Ninja karate chops Pirate`);
+            if (b === 'zombie') msg.text(`${cry} Ninja decapitates Zombie`);
+            if (a === b) msg.text(`Gasp! It's a tie!`);
+            break;
+        case 'zombie':
+            cry = 'Braaaaaaaaaainsss!';
+            if (b === 'monkey') msg.text(`${cry} Zombie savages Monkey`);
+            if (b === 'robot') msg.text(`${cry} Robot crushes Zombie`);
+            if (b === 'pirate') msg.text(`${cry} Zombie eats Pirate`);
+            if (b === 'ninja') msg.text(`${cry} Ninja decapitates Zombie`);
+            if (a === b) msg.text(`Gasp! It's a tie!`);
+            break;
+    }
+};
+
+const getChoices = () => {
+    console.log(`getChoices() ran`);
+    let playerOneChoice, playerTwoChoice;
+
+    playerOneRef.on('value', function(d) {
+        let data = d.val();
+        playerOneChoice = data.choice;
+        console.log(`Player One chose ${playerOneChoice}`);
+    });
+
+    playerTwoRef.on('value', function(d) {
+        let data = d.val();
+        playerTwoChoice = data.choice;
+        console.log(`Player Two chose ${playerTwoChoice}`);
+    });
+
+    compareChoices(playerOneChoice, playerTwoChoice);
 };
 
 // ! THIS DOES NOT WORK
