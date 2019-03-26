@@ -1,21 +1,3 @@
-/*
-
-////////////////////////////////////////////////////////////////
-
---- Gameplay logic
-
-    - The game will track each player's wins and losses.
-        - Compare the user choices and decide a winner.
-        - Add win/loss count to user
-
-////////////////////////////////////////////////////////////////
-
-    - Throw some chat functionality in there! 
-    ---- save text input to firebase db (*set*), and *append* to html with jQuery. that way even tho firebase replaces value with every message, the text is appended. for security reasons, chat is not saved locally or remotely. lol
-    
-
-*/
-
 // ! Initialize Firebase
 var config = {
     apiKey: 'AIzaSyB0rCzVmSeyg1AOB1-tg2C5fkTUAA1PRQE',
@@ -34,14 +16,16 @@ var database = firebase.database(),
     playerTwoRef,
     currentPlayer;
 
+// ? super secret function for debugging/testing purposes
 const nuke = () => {
     console.log('nuke() ran');
     database.ref('players').remove();
 };
 
+// ? returns the number of active players
 const activePlayers = () => {
     console.log('activePlayers() ran');
-    database.ref('players').on('value', function(data) {
+    database.ref('players').on('value', function (data) {
         if (data.val() !== null) {
             players = Object.keys(data.val()).length;
         } else players = 0;
@@ -49,6 +33,8 @@ const activePlayers = () => {
     return players;
 };
 
+// ? initializes game but first checks if game is full
+// TODO swap out alert() for bootstrap modal
 const init = () => {
     console.log('init() ran');
     if (players > 1) {
@@ -61,8 +47,9 @@ const init = () => {
     }
 };
 
+// ? listen for new players
 const playerListener = () => {
-    $('#submitName').on('click', function() {
+    $('#submitName').on('click', function () {
         let name = $('#playerName')
             .val()
             .trim();
@@ -75,6 +62,7 @@ const playerListener = () => {
     });
 };
 
+// ? push new player to Database
 const pushPlayer = name => {
     console.log('pushPlayer() ran');
     database.ref('players').push({
@@ -85,15 +73,17 @@ const pushPlayer = name => {
     });
 };
 
+// ? reveal board
 const showBoard = () => {
     console.log('showBoard() ran');
     $('#hello').toggle(400);
     $('#gameBoard').toggle(400);
 };
 
+// ? set data-key's to keep track of players
 const setKeys = () => {
     console.log('setKeys() ran');
-    database.ref('players').on('child_added', function(snapshot) {
+    database.ref('players').on('child_added', function (snapshot) {
         var playerKey = snapshot.key;
         if ($('#playerOneArea').attr('data-key') !== undefined) {
             console.log('playerOne data-key already set. Setting playerTwo');
@@ -106,6 +96,7 @@ const setKeys = () => {
     });
 };
 
+// ? store player refs in variables
 const setPlayerRefs = () => {
     console.log('setPlayerRefs() ran');
     console.log('~~~~~~~~~~~~~~~');
@@ -116,29 +107,30 @@ const setPlayerRefs = () => {
     currentPlayerRef = database.ref(`players/${currentPlayer}`);
 };
 
+// ? evaluate order of players
 const setPlayers = () => {
     console.log('setPlayers() ran');
     console.log('~~~~~~~~~~~~~~~');
     if (players === 1) {
-        playerOneRef.on('value', function(data) {
+        playerOneRef.on('value', function (data) {
             let playerOne = data.val();
             $('#playerOneName').text(playerOne.name);
             currentPlayer = $('#playerOneArea').attr('data-key');
         });
-        database.ref('players').on('value', function() {
+        database.ref('players').on('value', function () {
             if (players > 1) {
-                playerTwoRef.on('value', function(data) {
+                playerTwoRef.on('value', function (data) {
                     let playerTwo = data.val();
                     $('#playerTwoName').text(playerTwo.name);
                 });
             }
         });
     } else {
-        playerOneRef.on('value', function(data) {
+        playerOneRef.on('value', function (data) {
             let playerOne = data.val();
             $('#playerOneName').text(playerOne.name);
         });
-        playerTwoRef.on('value', function(data) {
+        playerTwoRef.on('value', function (data) {
             let playerTwo = data.val();
             $('#playerTwoName').text(playerTwo.name);
             currentPlayer = $('#playerTwoArea').attr('data-key');
@@ -147,6 +139,7 @@ const setPlayers = () => {
     }
 };
 
+// ? determines which player gets to see buttons
 const setButtons = () => {
     if ($('#playerOneArea').attr('data-key') !== currentPlayer) {
         console.log('playerTwo is the current player, generating play buttons');
@@ -159,11 +152,12 @@ const setButtons = () => {
     }
 };
 
+// ? dynamically create control buttons only current player sees
 const renderButtons = player => {
     let moves = ['monkey', 'robot', 'pirate', 'ninja', 'zombie'];
     let buttonArea = $('<div>').attr('id', `${player}Buttons`);
     $(`#${player}Area .card-text`).append(buttonArea);
-    $.each(moves, function(idx, val) {
+    $.each(moves, function (idx, val) {
         let button = $('<button>')
             .addClass('btn bg-primary text-white')
             .attr('data-play', val)
@@ -172,6 +166,7 @@ const renderButtons = player => {
     });
 };
 
+// ? sets game board for turn
 const setBoard = () => {
     console.log('setBoard() ran');
     setKeys();
@@ -183,9 +178,10 @@ const setBoard = () => {
     choiceCheck();
 };
 
+// ? updates the results area
 const resultsMessage = () => {
     let msg = $('#resultsMessage');
-    database.ref('players').on('value', function(data) {
+    database.ref('players').on('value', function (data) {
         if (players === 1) {
             msg.text('Waiting for Player Two to join.');
         } else {
@@ -201,7 +197,7 @@ const resultsMessage = () => {
 // * 2. compare choices and decide winner
 const buttonListener = () => {
     // TODO don't listen for button clicks until turn starts
-    $('.card-text button').on('click', function() {
+    $('.card-text button').on('click', function () {
         if (!$(this).hasClass('choice')) {
             $(this).addClass('choice');
             let choice = $(this).attr('data-play');
@@ -209,7 +205,7 @@ const buttonListener = () => {
                 choice: choice
             });
         }
-        $('.card-text button').each(function(i) {
+        $('.card-text button').each(function (i) {
             $(this).attr('disabled', 'true');
         });
     });
@@ -218,14 +214,14 @@ const buttonListener = () => {
 const choiceCheck = () => {
     console.log(`choiceCheck() ran`);
     let count = 0;
-    database.ref('players').on('child_changed', function() {
-        playerOneRef.on('value', function(d) {
+    database.ref('players').on('child_changed', function () {
+        playerOneRef.on('value', function (d) {
             let data = d.val();
             if (data.choice.length > 0) {
                 count++;
             }
         });
-        playerTwoRef.on('value', function(d) {
+        playerTwoRef.on('value', function (d) {
             let data = d.val();
             if (data.choice.length > 0) {
                 count++;
@@ -242,7 +238,6 @@ const choiceCheck = () => {
 };
 
 // TODO run compareChoice() when both players have chosen.
-
 const compareChoices = (a, b) => {
     console.log(`compareChoices() ran`);
     console.log(`Comparing: ${a} and ${b}`);
@@ -296,13 +291,13 @@ const getChoices = () => {
     console.log(`getChoices() ran`);
     let playerOneChoice, playerTwoChoice;
 
-    playerOneRef.on('value', function(d) {
+    playerOneRef.on('value', function (d) {
         let data = d.val();
         playerOneChoice = data.choice;
         console.log(`Player One chose ${playerOneChoice}`);
     });
 
-    playerTwoRef.on('value', function(d) {
+    playerTwoRef.on('value', function (d) {
         let data = d.val();
         playerTwoChoice = data.choice;
         console.log(`Player Two chose ${playerTwoChoice}`);
@@ -311,16 +306,37 @@ const getChoices = () => {
     compareChoices(playerOneChoice, playerTwoChoice);
 };
 
-// ! THIS DOES NOT WORK
+// ! BUG
+// ! compareChoices() doesn't run the switch statement unless you run getChoices() again manually in the console.
+
+// ! THIS DOES NOT WORK :(
 // ! const disconnectListener = () => {
 // !
 // !    playerOneRef.onDisconnect().remove();
 // !    playerTwoRef.onDisconnect().remove();
 // ! };
 
-$(function() {
+
+/*
+
+* ========== PSUEDOCODE ==========
+
+TODO Points/Turns
+
+? Distribute win/loss points in compareChoices()
+? Once points were evaluated, run setBoard() again to start next turn. Best out of 7 wins the game?
+
+TODO Chat
+? Use jQuery to grab message from form input
+? Use currentPlayer and data-key attribute to determine who typed message
+? Push input value and currentPlayer data-key to new Firebase .ref("messages").
+? Render message history similar to our class's Employee Timesheet exercise.
+
+*/
+
+$(function () {
     activePlayers();
-    $('#play').on('click', function() {
+    $('#play').on('click', function () {
         init();
         $('.name-form').toggle(400);
         $(this).toggle(400);
